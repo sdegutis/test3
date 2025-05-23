@@ -11,6 +11,19 @@ function transform(tree: FileTree, opts?: { watch?: boolean, jsxImport?: string 
   const watch = opts?.watch
   const jsxImport = opts?.jsxImport ?? '/_jsx.js'
 
+  function modifyPath(dep: string, source: babel.types.StringLiteral) {
+    if (!dep || dep.match(/^[./]/)) return
+
+    const split = dep.indexOf('/')
+    const lib = dep.slice(0, split)
+    const imported = dep.slice(split)
+
+    const pkgjson = JSON.parse(readFileSync('node_modules/' + lib + '/package.json', 'utf8'))
+    const baseurl = new URL(imported, pkgjson.homepage)
+
+    source.value = baseurl.href
+  }
+
   const require = createRequire(import.meta.url)
   const plugins: PluginItem[] = [
     [require('@babel/plugin-transform-typescript'), { isTSX: true }],
@@ -20,22 +33,24 @@ function transform(tree: FileTree, opts?: { watch?: boolean, jsxImport?: string 
         ImportDeclaration: {
           enter: (path) => {
             const dep = path.node.source?.value
-            if (!dep) return
-
             if (dep === 'react/jsx-runtime') {
               path.node.source.value = jsxImport
+              return
             }
-            else if (!dep.match(/^[./]/)) {
-              const split = dep.indexOf('/')
-              const lib = dep.slice(0, split)
-              const imported = dep.slice(split)
 
-              const pkgjson = JSON.parse(readFileSync('node_modules/' + lib + '/package.json', 'utf8'))
-              const baseurl = new URL(imported, pkgjson.homepage)
-              path.node.source.value = baseurl.href
-            }
+            modifyPath(dep, path.node.source)
           },
-        }
+        },
+        ExportDeclaration: {
+          enter(path) {
+            if (!('source' in path.node)) return
+
+            const dep = path.node.source?.value
+            if (!dep || dep.match(/^[./]/)) return
+
+            modifyPath(dep, path.node.source!)
+          }
+        },
       }
     }
   ]
