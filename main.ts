@@ -3,13 +3,14 @@ import { FileTree, generateFiles, Pipeline } from "immaculata"
 import { readFileSync, rmSync } from "node:fs"
 import { createRequire } from 'node:module'
 
-const shims = {
+const shims: Record<string, string> = {
   'react': 'https://esm.sh/react'
 }
 
 transform(new FileTree('src', import.meta.url), {
   watch: process.argv[2] === 'dev',
-  jsxImport: '/test3/_jsx2.js',
+  // jsxImport: '/test3/_jsx2.js',
+  jsxImport: 'react',
 })
 
 export function transform(tree: FileTree, opts?: { watch?: boolean, jsxImport?: string }) {
@@ -60,6 +61,11 @@ export function transform(tree: FileTree, opts?: { watch?: boolean, jsxImport?: 
 function modifyPath(source: babel.types.StringLiteral) {
   const dep = source.value
   if (dep.match(/^[./]/) || dep.startsWith('http')) return
+
+  if (dep in shims) {
+    source.value = shims[dep]
+    return
+  }
 
   const split = dep.indexOf('/')
   const lib = dep.slice(0, split)
