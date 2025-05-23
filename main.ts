@@ -6,8 +6,6 @@ const isDev = process.argv[2] === 'dev'
 
 const src = new FileTree('src', import.meta.url)
 
-const transform = makeTransform()
-
 if (isDev) {
   const server = new DevServer(8181, { prefix: '/test3' })
   server.files = transformSrcDir()
@@ -31,9 +29,9 @@ function transformSrcDir() {
   return files.results()
 }
 
-function makeTransform() {
+function transform(text: string) {
   const require = createRequire(import.meta.url)
-  return (text: string) => transformSync(text, {
+  return transformSync(text, {
     plugins: [
       [require('@babel/plugin-transform-typescript'), { isTSX: true }],
       [require('@babel/plugin-transform-react-jsx'), { runtime: 'automatic' }],
