@@ -2,10 +2,9 @@ import { transformSync } from '@babel/core'
 import { babel, DevServer, FileTree, generateFiles, Pipeline } from "immaculata"
 import { createRequire } from 'node:module'
 
-const isDev = process.argv[2] === 'dev'
-
 const src = new FileTree('src', import.meta.url)
 
+const isDev = process.argv[2] === 'dev'
 if (isDev) {
   const server = new DevServer(8181, { prefix: '/test3' })
   server.files = transformSrcDir()
