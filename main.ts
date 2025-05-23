@@ -37,7 +37,6 @@ function transform(text: string) {
       ['@babel/plugin-transform-typescript', { isTSX: true }],
       ['@babel/plugin-transform-react-jsx', { runtime: 'automatic' }],
       ['immaculata/babel.js', {
-        projectRoot: import.meta.dirname,
         replacements: {
           'react/jsx-runtime': 'https://esm.sh/react@19.1.0/es2022/jsx-runtime.mjs',
           'react': 'https://esm.sh/react',
