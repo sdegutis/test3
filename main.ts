@@ -32,7 +32,7 @@ function transform(tree: FileTree, opts?: { watch?: boolean, jsxImport?: string 
     {
       visitor: {
         ImportDeclaration: {
-          enter: (path) => {
+          enter(path) {
             let dep = path.node.source?.value
             if (dep === 'react/jsx-runtime') {
               path.node.source.value = dep = jsxImport
