@@ -24,10 +24,14 @@ else {
 
 function transformSrcDir(server?: DevServer) {
   const files = Pipeline.from(src.files)
+
   files.with(/\.tsx?$/).do(file => {
     file.path = file.path.replace(/\.tsx?$/, '.js')
     file.text = transform(file.text)
   })
+
+  files.do(f => f.path = '/test3' + f.path)
+
   const map = files.results()
   if (server) server.files = map
   rmSync('docs', { force: true, recursive: true })
