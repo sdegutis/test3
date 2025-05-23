@@ -5,6 +5,7 @@
     "watch": "tsc --watch"
   },
   "type": "module",
+  "homepage": "https://api.90s.dev/",
   "devDependencies": {
     "@babel/core": "^7.27.1",
     "@babel/plugin-transform-react-jsx": "^7.27.1",
