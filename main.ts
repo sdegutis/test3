@@ -11,13 +11,31 @@ const isDev = process.argv[2] === 'dev'
 
 const src = new FileTree('src', import.meta.url)
 
-const dostuff = transform(src, {
-  // jsxImport: '/test3/_jsx2.js',
-  jsxImport: 'react',
+const transform = makeTransform(src, {
+  jsxImport: '/test3/_jsx2.js',
+  // jsxImport: 'react',
+  // shims
 })
 
+transformSrcDir()
+
 if (isDev) {
-  src.watch().on('filesUpdated', dostuff)
+  src.watch().on('filesUpdated', transformSrcDir)
+}
+
+function transformSrcDir() {
+
+  const files = Pipeline.from(src.files)
+
+  files.with(/\.tsx?$/).do(file => {
+    file.path = file.path.replace(/\.tsx?$/, '.js')
+    file.text = transform(file.text)
+  })
+
+  rmSync('docs', { force: true, recursive: true })
+  generateFiles(files.results())
+
+
 }
 
 
@@ -25,8 +43,12 @@ if (isDev) {
 
 
 
-export function transform(tree: FileTree, opts?: { jsxImport?: string }) {
+export function makeTransform(tree: FileTree, opts?: {
+  jsxImport?: string,
+  shims?: Record<string, string>,
+}) {
   const jsxImport = opts?.jsxImport ?? '/_jsx.js'
+  const shims = opts?.shims
 
   const require = createRequire(import.meta.url)
   const plugins: PluginItem[] = [
@@ -53,37 +75,26 @@ export function transform(tree: FileTree, opts?: { jsxImport?: string }) {
     }
   ]
 
-  transformAll()
-  return transformAll
-
-  function transformAll() {
-    const files = Pipeline.from(tree.files)
-
-    files.with(/\.tsx?$/).do(file => {
-      file.path = file.path.replace(/\.tsx?$/, '.js')
-      file.text = transformSync(file.text, { plugins, })?.code!
-    })
-
-    rmSync('docs', { force: true, recursive: true })
-    generateFiles(files.results())
-  }
-}
-
-function modifyPath(source: babel.types.StringLiteral) {
-  const dep = source.value
-  if (dep.match(/^[./]/) || dep.startsWith('http')) return
-
-  if (dep in shims) {
-    source.value = shims[dep]
-    return
+  return function (text: string) {
+    return transformSync(text, { plugins, })?.code!
   }
 
-  const split = dep.indexOf('/')
-  const lib = dep.slice(0, split)
-  const imported = dep.slice(split)
+  function modifyPath(source: babel.types.StringLiteral) {
+    const dep = source.value
+    if (dep.match(/^[./]/) || dep.startsWith('http')) return
 
-  const pkgjson = JSON.parse(readFileSync('node_modules/' + lib + '/package.json', 'utf8'))
-  const baseurl = new URL(imported, pkgjson.homepage)
+    if (shims && dep in shims) {
+      source.value = shims[dep]
+      return
+    }
 
-  source.value = baseurl.href
+    const split = dep.indexOf('/')
+    const lib = dep.slice(0, split)
+    const imported = dep.slice(split)
+
+    const pkgjson = JSON.parse(readFileSync('node_modules/' + lib + '/package.json', 'utf8'))
+    const baseurl = new URL(imported, pkgjson.homepage)
+
+    source.value = baseurl.href
+  }
 }
