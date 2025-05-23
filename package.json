@@ -19,6 +19,8 @@
   },
   "dependencies": {
     "@babel/core": "^7.27.1",
+    "@babel/plugin-transform-react-jsx": "^7.27.1",
+    "@babel/plugin-transform-typescript": "^7.27.1",
     "api.90s.dev": "github:sdegutis/api.90s.dev",
     "react": "^19.1.0",
     "react-dom": "^19.1.0"
