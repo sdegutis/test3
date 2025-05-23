@@ -7,14 +7,25 @@ const shims: Record<string, string> = {
   'react': 'https://esm.sh/react'
 }
 
-transform(new FileTree('src', import.meta.url), {
-  watch: process.argv[2] === 'dev',
+const isDev = process.argv[2] === 'dev'
+
+const src = new FileTree('src', import.meta.url)
+
+const dostuff = transform(src, {
   // jsxImport: '/test3/_jsx2.js',
   jsxImport: 'react',
 })
 
-export function transform(tree: FileTree, opts?: { watch?: boolean, jsxImport?: string }) {
-  const watch = opts?.watch
+if (isDev) {
+  src.watch().on('filesUpdated', dostuff)
+}
+
+
+
+
+
+
+export function transform(tree: FileTree, opts?: { jsxImport?: string }) {
   const jsxImport = opts?.jsxImport ?? '/_jsx.js'
 
   const require = createRequire(import.meta.url)
@@ -43,7 +54,7 @@ export function transform(tree: FileTree, opts?: { watch?: boolean, jsxImport?: 
   ]
 
   transformAll()
-  if (watch) tree.watch().on('filesUpdated', transformAll)
+  return transformAll
 
   function transformAll() {
     const files = Pipeline.from(tree.files)
