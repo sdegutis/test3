@@ -8,10 +8,10 @@
       "name": "Launch os.90s.dev",
       "type": "node",
       "request": "launch",
-      "program": "${workspaceFolder}/main.js",
+      "program": "${workspaceFolder}/main.ts",
       "args": [ "dev" ],
       "skipFiles": [ "<node_internals>/**" ],
-      "runtimeArgs": [ "--watch-path=main.js" ]
+      "runtimeArgs": [ "--watch-path=main.ts" ]
     }
   ]
 }
