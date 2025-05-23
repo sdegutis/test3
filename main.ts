@@ -8,9 +8,9 @@ const isDev = process.argv[2] === 'dev'
 const src = new FileTree('src', import.meta.url)
 
 const transform = makeTransform(src, {
+  'react/jsx-runtime': 'https://esm.sh/react',
   // jsxImport: '/test3/_jsx2.js',
   // jsxImport: 'react',
-  shims: { 'react/jsx-runtime': 'https://esm.sh/react2' },
 })
 
 if (isDev) {
@@ -51,13 +51,7 @@ function transformSrcDir() {
 
 
 
-export function makeTransform(tree: FileTree, opts?: {
-  jsxImport?: string,
-  shims?: Record<string, string>,
-}) {
-  const jsxImport = opts?.jsxImport ?? '/_jsx.js'
-  const shims = opts?.shims
-
+export function makeTransform(tree: FileTree, shims?: Record<string, string>) {
   const require = createRequire(import.meta.url)
   const plugins: PluginItem[] = [
     [require('@babel/plugin-transform-typescript'), { isTSX: true }],
@@ -66,9 +60,6 @@ export function makeTransform(tree: FileTree, opts?: {
       visitor: {
         ImportDeclaration: {
           enter(path) {
-            if (path.node.source.value === 'react/jsx-runtime') {
-              path.node.source.value = jsxImport
-            }
             modifyPath(path.node.source)
           },
         },
