@@ -13,11 +13,7 @@ const transform = makeTransform({
 })
 
 if (isDev) {
-  const server = new DevServer(8181, {
-    onRequest(res) {
-      res.req.url = res.req.url!.slice('/test3'.length)
-    },
-  })
+  const server = new DevServer(8181, { prefix: '/test3' })
   transformSrcDir(server)
   src.watch().on('filesUpdated', () => transformSrcDir(server))
 }
