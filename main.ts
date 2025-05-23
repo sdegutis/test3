@@ -9,12 +9,14 @@ publishDir({
   srcDir: 'src',
   dev: process.argv[2] === 'dev' && {
     port: 8181,
+    generateFiles: true,
   },
 })
 
 function publishDir(opts: {
   dev?: {
     port: number,
+    generateFiles: boolean,
   } | false,
   projectRoot: string,
   srcDir: string,
@@ -51,9 +53,14 @@ function publishDir(opts: {
     })
 
     const map = files.results()
+
     if (server) server.files = map
-    rmSync('docs', { force: true, recursive: true })
-    generateFiles(map)
+
+    if (!opts.dev || opts.dev.generateFiles) {
+      rmSync('docs', { force: true, recursive: true })
+      generateFiles(map)
+    }
+
     return map
   }
 
