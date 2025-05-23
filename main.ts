@@ -7,14 +7,17 @@ const isDev = process.argv[2] === 'dev'
 
 const src = new FileTree('src', import.meta.url)
 
-const transform = makeTransform(src, {
-  'react/jsx-runtime': 'https://esm.sh/react',
-  // jsxImport: '/test3/_jsx2.js',
-  // jsxImport: 'react',
+const transform = makeTransform({
+  // 'react/jsx-runtime': 'https://esm.sh/react',
+  'react/jsx-runtime': '/test3/_jsx2.js',
 })
 
 if (isDev) {
-  const server = new DevServer(8181)
+  const server = new DevServer(8181, {
+    onRequest(res) {
+      res.req.url = res.req.url!.slice('/test3'.length)
+    },
+  })
   transformSrcDir(server)
   src.watch().on('filesUpdated', () => transformSrcDir(server))
 }
@@ -30,8 +33,6 @@ function transformSrcDir(server?: DevServer) {
     file.text = transform(file.text)
   })
 
-  files.do(f => f.path = '/test3' + f.path)
-
   const map = files.results()
   if (server) server.files = map
   rmSync('docs', { force: true, recursive: true })
@@ -44,7 +45,7 @@ function transformSrcDir(server?: DevServer) {
 
 
 
-export function makeTransform(tree: FileTree, shims?: Record<string, string>) {
+export function makeTransform(replacements?: Record<string, string>) {
   const require = createRequire(import.meta.url)
   const plugins: PluginItem[] = [
     [require('@babel/plugin-transform-typescript'), { isTSX: true }],
@@ -67,16 +68,16 @@ export function makeTransform(tree: FileTree, shims?: Record<string, string>) {
     }
   ]
 
-  return function (text: string) {
-    return transformSync(text, { plugins, })?.code!
-  }
+  return (text: string) => transformSync(text, {
+    plugins,
+  })!.code!
 
   function modifyPath(source: babel.types.StringLiteral) {
     const dep = source.value
     if (dep.match(/^[./]/) || dep.startsWith('http')) return
 
-    if (shims && dep in shims) {
-      source.value = shims[dep]
+    if (replacements && dep in replacements) {
+      source.value = replacements[dep]
       return
     }
 
