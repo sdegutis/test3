@@ -5,7 +5,7 @@ import { createRequire } from 'node:module'
 
 transform(new FileTree('src', import.meta.url), {
   watch: process.argv[2] === 'dev',
-  jsxImport: 'api.90s.dev/index.js'
+  jsxImport: 'https://api.90s.dev/_jsx.js'
 })
 
 function transform(tree: FileTree, opts?: { watch?: boolean, jsxImport?: string }) {
@@ -14,6 +14,7 @@ function transform(tree: FileTree, opts?: { watch?: boolean, jsxImport?: string 
 
   function modifyPath(dep: string | undefined, source: babel.types.StringLiteral) {
     if (!dep || dep.match(/^[./]/)) return
+    if (dep.startsWith('http')) return
 
     const split = dep.indexOf('/')
     const lib = dep.slice(0, split)
