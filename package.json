@@ -1,11 +1,14 @@
 {
-  "name": "api.90s.dev",
+  "name": "test3",
   "version": "1.0.0",
+  "exports": {
+    "./*": "./src/*"
+  },
   "scripts": {
     "watch": "tsc --watch"
   },
   "type": "module",
-  "homepage": "https://api.90s.dev/",
+  "homepage": "https://sdegutis.github.io/test3/",
   "devDependencies": {
     "@types/node": "^22.15.21",
     "immaculata": "^2.0.1",
