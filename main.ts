@@ -1,41 +1,49 @@
 import { transformSync, type PluginItem } from '@babel/core'
-import { FileTree, generateFiles, Pipeline } from "immaculata"
+import { DevServer, FileTree, generateFiles, Pipeline } from "immaculata"
 import { readFileSync, rmSync } from "node:fs"
 import { createRequire } from 'node:module'
-
-const shims: Record<string, string> = {
-  'react': 'https://esm.sh/react'
-}
 
 const isDev = process.argv[2] === 'dev'
 
 const src = new FileTree('src', import.meta.url)
 
 const transform = makeTransform(src, {
-  jsxImport: '/test3/_jsx2.js',
+  // jsxImport: '/test3/_jsx2.js',
   // jsxImport: 'react',
-  // shims
+  shims: { 'react/jsx-runtime': 'https://esm.sh/react2' },
 })
 
-transformSrcDir()
-
 if (isDev) {
-  src.watch().on('filesUpdated', transformSrcDir)
+  const server = new DevServer(8181)
+
+  src.watch().on('filesUpdated', () => {
+    const map = transformSrcDir()
+    server.files = map
+
+    rmSync('docs', { force: true, recursive: true })
+    generateFiles(map)
+  })
+
+  const map = transformSrcDir()
+  server.files = map
+
+  rmSync('docs', { force: true, recursive: true })
+  generateFiles(map)
+}
+else {
+  const map = transformSrcDir()
+
+  rmSync('docs', { force: true, recursive: true })
+  generateFiles(map)
 }
 
 function transformSrcDir() {
-
   const files = Pipeline.from(src.files)
-
   files.with(/\.tsx?$/).do(file => {
     file.path = file.path.replace(/\.tsx?$/, '.js')
     file.text = transform(file.text)
   })
-
-  rmSync('docs', { force: true, recursive: true })
-  generateFiles(files.results())
-
-
+  return files.results()
 }
 
 
