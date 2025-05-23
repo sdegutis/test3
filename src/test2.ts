@@ -1,3 +1,3 @@
-import { foo } from "./test1.js"
+// import { foo } from "./test1.js"
 
-export const bar = foo * 2
+// export const bar = foo * 2

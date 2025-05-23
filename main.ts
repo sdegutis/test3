@@ -1,5 +1,5 @@
 import { transformSync } from '@babel/core'
-import { babel, DevServer, FileTree, generateFiles, Pipeline } from "immaculata"
+import { DevServer, FileTree, generateFiles, Pipeline } from "immaculata"
 import { rmSync } from 'node:fs'
 
 const src = new FileTree('src', import.meta.url)
@@ -36,10 +36,15 @@ function transform(text: string) {
     plugins: [
       ['@babel/plugin-transform-typescript', { isTSX: true }],
       ['@babel/plugin-transform-react-jsx', { runtime: 'automatic' }],
-      babel.transformImportsPlugin(import.meta.dirname, {
-        'react/jsx-runtime': 'https://esm.sh/react',
-        // 'react/jsx-runtime': '/test3/_jsx2.js',
-      })
+      ['immaculata/babel.js', {
+        projectRoot: import.meta.dirname,
+        replacements: {
+          'react/jsx-runtime': 'https://esm.sh/react@19.1.0/es2022/jsx-runtime.mjs',
+          'react': 'https://esm.sh/react',
+          'react-dom/client': 'https://esm.sh/react-dom/client.js',
+          // 'react/jsx-runtime': '/test3/_jsx2.js',
+        }
+      }],
     ],
   })!.code!
 }
