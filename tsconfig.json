@@ -5,6 +5,7 @@
     "jsx": "react-native",
     "rootDir": ".",
     "noEmit": true,
+    "checkJs": true,
 
     "forceConsistentCasingInFileNames": true,
     "strict": true,
