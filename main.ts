@@ -15,35 +15,24 @@ const transform = makeTransform(src, {
 
 if (isDev) {
   const server = new DevServer(8181)
-
-  src.watch().on('filesUpdated', () => {
-    const map = transformSrcDir()
-    server.files = map
-
-    rmSync('docs', { force: true, recursive: true })
-    generateFiles(map)
-  })
-
-  const map = transformSrcDir()
-  server.files = map
-
-  rmSync('docs', { force: true, recursive: true })
-  generateFiles(map)
+  transformSrcDir(server)
+  src.watch().on('filesUpdated', () => transformSrcDir(server))
 }
 else {
-  const map = transformSrcDir()
-
-  rmSync('docs', { force: true, recursive: true })
-  generateFiles(map)
+  transformSrcDir()
 }
 
-function transformSrcDir() {
+function transformSrcDir(server?: DevServer) {
   const files = Pipeline.from(src.files)
   files.with(/\.tsx?$/).do(file => {
     file.path = file.path.replace(/\.tsx?$/, '.js')
     file.text = transform(file.text)
   })
-  return files.results()
+  const map = files.results()
+  if (server) server.files = map
+  rmSync('docs', { force: true, recursive: true })
+  generateFiles(map)
+  return map
 }
 
 
