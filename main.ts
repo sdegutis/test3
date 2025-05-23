@@ -38,13 +38,9 @@ function transformSrcDir(server?: DevServer) {
 
 
 
+function transformImportsPlugin(replacements?: Record<string, string>) {
 
-
-
-function makeTransform(replacements?: Record<string, string>) {
-  const require = createRequire(import.meta.url)
-
-  const transformImportsPlugin: PluginItem = {
+  const transformImports: PluginItem = {
     visitor: {
       ImportDeclaration: {
         enter(path) {
@@ -61,13 +57,7 @@ function makeTransform(replacements?: Record<string, string>) {
     }
   }
 
-  return (text: string) => transformSync(text, {
-    plugins: [
-      [require('@babel/plugin-transform-typescript'), { isTSX: true }],
-      [require('@babel/plugin-transform-react-jsx'), { runtime: 'automatic' }],
-      transformImportsPlugin
-    ],
-  })!.code!
+  return transformImports
 
   function modifyPath(source: babel.types.StringLiteral) {
     const dep = source.value
@@ -87,4 +77,17 @@ function makeTransform(replacements?: Record<string, string>) {
 
     source.value = baseurl.href
   }
+
+}
+
+
+function makeTransform(replacements?: Record<string, string>) {
+  const require = createRequire(import.meta.url)
+  return (text: string) => transformSync(text, {
+    plugins: [
+      [require('@babel/plugin-transform-typescript'), { isTSX: true }],
+      [require('@babel/plugin-transform-react-jsx'), { runtime: 'automatic' }],
+      transformImportsPlugin(replacements)
+    ],
+  })!.code!
 }
