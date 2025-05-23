@@ -24,7 +24,7 @@ files.with(/\.tsx?$/).do(file => {
               if (!dep) return
 
               if (dep === 'react/jsx-runtime') {
-                path.node.source.value = '/foo/bar.js'
+                path.node.source.value = '/_jsx.js'
               }
             },
           }
