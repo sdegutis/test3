@@ -3,7 +3,7 @@
     // "lib": [ "ESNext", "DOM", "DOM.Iterable" ],
     // "moduleDetection": "force",
     "target": "ESNext",
-    // "module": "NodeNext",
+    "module": "NodeNext",
     "jsx": "react-native",
     "rootDir": ".",
     "noEmit": true,
