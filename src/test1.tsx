@@ -1,9 +1,9 @@
-// import { foo as foo2 } from 'api.90s.dev/test1.js'
+import { foo as foo2 } from 'api.90s.dev/test1.js'
 // import React from 'react'
 import React from 'react'
 import { createRoot } from 'react-dom/client'
 
-// export const foo = foo2 + 1
+export const foo = foo2 + 1
 
 function Foo() {
   const [clicks, setClicks] = React.useState(0)
