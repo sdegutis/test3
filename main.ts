@@ -5,9 +5,11 @@ import { rmSync } from 'node:fs'
 
 const src = new FileTree('src', import.meta.url)
 
+const prefix = '/test3'
+
 const isDev = process.argv[2] === 'dev'
 if (isDev) {
-  const server = new DevServer(8181, { prefix: '/test3' })
+  const server = new DevServer(8181, { prefix })
   processSite(server)
   src.watch().on('filesUpdated', () => {
     processSite(server)
@@ -21,8 +23,14 @@ function processSite(server?: DevServer) {
   const files = Pipeline.from(src.files)
 
   files.with(/\.tsx?$/).do(file => {
+    const result = transform(file.path, file.text)!
     file.path = file.path.replace(/\.tsx?$/, '.js')
-    file.text = transform(file.text)
+
+    const mapPath = file.path + '.map'
+    const sourceMapPart = '\n//# sourceMappingURL=' + prefix + mapPath
+    file.text = result.code! + sourceMapPart
+
+    files.add(mapPath, JSON.stringify(result.map))
   })
 
   const map = files.results()
@@ -32,17 +40,17 @@ function processSite(server?: DevServer) {
   return map
 }
 
-function transform(text: string) {
+function transform(path: string, text: string) {
   return transformSync(text, {
+    sourceMaps: true,
+    filename: path,
     plugins: [
       ['@babel/plugin-transform-typescript', { isTSX: true }],
       ['@babel/plugin-transform-react-jsx', { runtime: 'automatic' }],
       transformImportsPlugin(import.meta.dirname, {
-        // 'react/jsx-runtime': 'https://esm.sh/react/jsx-runtime.mjs',
         'react': 'https://esm.sh/react',
         'react-dom': 'https://esm.sh/react-dom',
-        // 'react/jsx-runtime': '/test3/_jsx2.js',
       }),
     ],
-  })!.code!
+  })
 }
