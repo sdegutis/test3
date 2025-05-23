@@ -1,0 +1,24 @@
+{
+  "compilerOptions": {
+    // "lib": [ "ESNext", "DOM", "DOM.Iterable" ],
+    // "moduleDetection": "force",
+    "target": "ESNext",
+    // "module": "NodeNext",
+    "jsx": "react-native",
+    "rootDir": ".",
+    "noEmit": true,
+    // "moduleResolution": "nodenext",
+
+    "forceConsistentCasingInFileNames": true,
+    "strict": true,
+    "noImplicitAny": true,
+    "noImplicitReturns": true,
+    "noImplicitOverride": true,
+    "isolatedModules": true,
+    "exactOptionalPropertyTypes": true,
+    "esModuleInterop": true,
+    "noFallthroughCasesInSwitch": true,
+    "noPropertyAccessFromIndexSignature": true,
+    // "skipLibCheck": true,
+  },
+}

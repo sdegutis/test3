@@ -1,0 +1,11 @@
+{
+  "name": "api.90s.dev",
+  "version": "1.0.0",
+  "scripts": {
+    "watch": "tsc --watch"
+  },
+  "type": "module",
+  "devDependencies": {
+    "typescript": "^5.8.3"
+  }
+}
