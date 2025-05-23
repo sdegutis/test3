@@ -1,6 +1,6 @@
 import { transformSync } from '@babel/core'
 import { FileTree, generateFiles, Pipeline } from "immaculata"
-import { rmSync } from "node:fs"
+import { readFileSync, rmSync } from "node:fs"
 import { createRequire } from 'node:module'
 
 const require = createRequire(import.meta.url)
@@ -8,7 +8,9 @@ const require = createRequire(import.meta.url)
 const tree = new FileTree('src', import.meta.url)
 
 transformAll()
-tree.watch().on('filesUpdated', transformAll)
+
+const isDev = process.argv[2] === 'dev'
+if (isDev) tree.watch().on('filesUpdated', transformAll)
 
 function transformAll() {
   const files = Pipeline.from(tree.files)
@@ -17,7 +19,6 @@ function transformAll() {
     file.path = file.path.replace(/\.tsx?$/, '.js')
     file.text = transformSync(file.text, {
       plugins: [
-
         [require('@babel/plugin-transform-typescript'), { isTSX: true }],
         [require('@babel/plugin-transform-react-jsx'), { runtime: 'automatic' }],
         {
@@ -29,6 +30,15 @@ function transformAll() {
 
                 if (dep === 'react/jsx-runtime') {
                   path.node.source.value = '/_jsx.js'
+                }
+                else if (!dep.match(/^[./]/)) {
+                  const split = dep.indexOf('/')
+                  const lib = dep.slice(0, split)
+                  const imported = dep.slice(split)
+
+                  const pkgjson = JSON.parse(readFileSync('node_modules/' + lib + '/package.json', 'utf8'))
+                  const baseurl = new URL(imported, pkgjson.homepage)
+                  path.node.source.value = baseurl.href
                 }
               },
             }

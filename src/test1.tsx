@@ -1,10 +1,4 @@
-export const foo = 123
-export const qux = <qux />
+import { foo as foo2 } from 'api.90s.dev/test1.js'
 
-declare global {
-  namespace JSX {
-    interface IntrinsicElements {
-      [key: string]: { a?: number }
-    }
-  }
-}
+export const foo = foo2
+export const qux = <qux a={3} />
