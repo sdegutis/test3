@@ -8,16 +8,16 @@ const src = new FileTree('src', import.meta.url)
 const isDev = process.argv[2] === 'dev'
 if (isDev) {
   const server = new DevServer(8181, { prefix: '/test3' })
-  transformSrcDir(server)
+  processSite(server)
   src.watch().on('filesUpdated', () => {
-    transformSrcDir(server)
+    processSite(server)
   })
 }
 else {
-  transformSrcDir()
+  processSite()
 }
 
-function transformSrcDir(server?: DevServer) {
+function processSite(server?: DevServer) {
   const files = Pipeline.from(src.files)
 
   files.with(/\.tsx?$/).do(file => {
