@@ -11,6 +11,10 @@ publishDir({
     port: 8181,
     generateFiles: true,
   },
+  importMap: {
+    'react': 'https://esm.sh/react',
+    'react-dom': 'https://esm.sh/react-dom',
+  }
 })
 
 function publishDir(opts: {
@@ -20,6 +24,7 @@ function publishDir(opts: {
   } | false,
   projectRoot: string,
   srcDir: string,
+  importMap: Record<string, string>
 }) {
 
   const src = new FileTree(opts.srcDir, opts.projectRoot)
@@ -71,10 +76,7 @@ function publishDir(opts: {
       plugins: [
         ['@babel/plugin-transform-typescript', { isTSX: true }],
         ['@babel/plugin-transform-react-jsx', { runtime: 'automatic' }],
-        transformImportsPlugin(opts.projectRoot, {
-          'react': 'https://esm.sh/react',
-          'react-dom': 'https://esm.sh/react-dom',
-        }),
+        transformImportsPlugin(opts.projectRoot, opts.importMap),
       ],
     })
   }
