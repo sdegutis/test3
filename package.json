@@ -1,16 +1,15 @@
 {
   "name": "test3",
-  "version": "1.0.0",
+  "homepage": "https://sdegutis.github.io/test3/",
   "exports": {
     "./*": "./src/*"
   },
+  "version": "1.0.0",
   "scripts": {
     "watch": "tsc --watch"
   },
   "type": "module",
-  "homepage": "https://sdegutis.github.io/test3/",
   "devDependencies": {
-    "@types/babel__core": "^7.20.5",
     "@types/node": "^22.15.21",
     "@types/react": "^19.1.5",
     "@types/react-dom": "^19.1.5",
@@ -18,9 +17,6 @@
     "typescript": "^5.8.3"
   },
   "dependencies": {
-    "@babel/core": "^7.27.1",
-    "@babel/plugin-transform-react-jsx": "^7.27.1",
-    "@babel/plugin-transform-typescript": "^7.27.1",
     "api.90s.dev": "github:sdegutis/api.90s.dev",
     "quickexport": "^2.0.0",
     "react": "^19.1.0",
