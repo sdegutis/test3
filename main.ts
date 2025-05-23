@@ -41,31 +41,32 @@ function transformSrcDir(server?: DevServer) {
 
 
 
-export function makeTransform(replacements?: Record<string, string>) {
+function makeTransform(replacements?: Record<string, string>) {
   const require = createRequire(import.meta.url)
-  const plugins: PluginItem[] = [
-    [require('@babel/plugin-transform-typescript'), { isTSX: true }],
-    [require('@babel/plugin-transform-react-jsx'), { runtime: 'automatic' }],
-    {
-      visitor: {
-        ImportDeclaration: {
-          enter(path) {
+
+  const transformImportsPlugin: PluginItem = {
+    visitor: {
+      ImportDeclaration: {
+        enter(path) {
+          modifyPath(path.node.source)
+        },
+      },
+      ExportDeclaration: {
+        enter(path) {
+          if ('source' in path.node && path.node.source?.value) {
             modifyPath(path.node.source)
-          },
-        },
-        ExportDeclaration: {
-          enter(path) {
-            if ('source' in path.node && path.node.source?.value) {
-              modifyPath(path.node.source)
-            }
           }
-        },
-      }
+        }
+      },
     }
-  ]
+  }
 
   return (text: string) => transformSync(text, {
-    plugins,
+    plugins: [
+      [require('@babel/plugin-transform-typescript'), { isTSX: true }],
+      [require('@babel/plugin-transform-react-jsx'), { runtime: 'automatic' }],
+      transformImportsPlugin
+    ],
   })!.code!
 
   function modifyPath(source: babel.types.StringLiteral) {
