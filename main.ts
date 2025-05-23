@@ -64,7 +64,7 @@ function transformImportsPlugin(replacements?: Record<string, string>) {
     if (dep.match(/^[./]/) || dep.startsWith('http')) return
 
     if (replacements && dep in replacements) {
-      source.value = replacements[dep]
+      source.value = replacements[dep]!
       return
     }
 
