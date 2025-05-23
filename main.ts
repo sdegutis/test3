@@ -20,18 +20,17 @@ function transform(tree: FileTree, opts?: { watch?: boolean, jsxImport?: string 
       visitor: {
         ImportDeclaration: {
           enter(path) {
-            let dep = path.node.source?.value
-            if (dep === 'react/jsx-runtime') {
-              path.node.source.value = dep = jsxImport
+            if (path.node.source.value === 'react/jsx-runtime') {
+              path.node.source.value = jsxImport
             }
-            modifyPath(dep, path.node.source)
+            modifyPath(path.node.source)
           },
         },
         ExportDeclaration: {
           enter(path) {
-            if (!('source' in path.node)) return
-            const dep = path.node.source?.value
-            modifyPath(dep, path.node.source!)
+            if ('source' in path.node && path.node.source?.value) {
+              modifyPath(path.node.source)
+            }
           }
         },
       }
@@ -54,9 +53,9 @@ function transform(tree: FileTree, opts?: { watch?: boolean, jsxImport?: string 
   }
 }
 
-function modifyPath(dep: string | undefined, source: babel.types.StringLiteral) {
-  if (!dep || dep.match(/^[./]/)) return
-  if (dep.startsWith('http')) return
+function modifyPath(source: babel.types.StringLiteral) {
+  const dep = source.value
+  if (dep.match(/^[./]/) || dep.startsWith('http')) return
 
   const split = dep.indexOf('/')
   const lib = dep.slice(0, split)
