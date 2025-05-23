@@ -1,5 +1,6 @@
 import { transformSync } from '@babel/core'
 import { babel, DevServer, FileTree, generateFiles, Pipeline } from "immaculata"
+import { rmSync } from 'node:fs'
 import { createRequire } from 'node:module'
 
 const src = new FileTree('src', import.meta.url)
@@ -7,17 +8,16 @@ const src = new FileTree('src', import.meta.url)
 const isDev = process.argv[2] === 'dev'
 if (isDev) {
   const server = new DevServer(8181, { prefix: '/test3' })
-  server.files = transformSrcDir()
+  transformSrcDir(server)
   src.watch().on('filesUpdated', () => {
-    server.files = transformSrcDir()
+    transformSrcDir(server)
   })
 }
 else {
-  const map = transformSrcDir()
-  generateFiles(map)
+  transformSrcDir()
 }
 
-function transformSrcDir() {
+function transformSrcDir(server?: DevServer) {
   const files = Pipeline.from(src.files)
 
   files.with(/\.tsx?$/).do(file => {
@@ -25,7 +25,11 @@ function transformSrcDir() {
     file.text = transform(file.text)
   })
 
-  return files.results()
+  const map = files.results()
+  if (server) server.files = map
+  rmSync('docs', { force: true, recursive: true })
+  generateFiles(map)
+  return map
 }
 
 function transform(text: string) {
