@@ -5,13 +5,14 @@ import { createRequire } from 'node:module'
 
 transform(new FileTree('src', import.meta.url), {
   watch: process.argv[2] === 'dev',
+  jsxImport: 'api.90s.dev/index.js'
 })
 
 function transform(tree: FileTree, opts?: { watch?: boolean, jsxImport?: string }) {
   const watch = opts?.watch
   const jsxImport = opts?.jsxImport ?? '/_jsx.js'
 
-  function modifyPath(dep: string, source: babel.types.StringLiteral) {
+  function modifyPath(dep: string | undefined, source: babel.types.StringLiteral) {
     if (!dep || dep.match(/^[./]/)) return
 
     const split = dep.indexOf('/')
@@ -32,22 +33,17 @@ function transform(tree: FileTree, opts?: { watch?: boolean, jsxImport?: string 
       visitor: {
         ImportDeclaration: {
           enter: (path) => {
-            const dep = path.node.source?.value
+            let dep = path.node.source?.value
             if (dep === 'react/jsx-runtime') {
-              path.node.source.value = jsxImport
-              return
+              path.node.source.value = dep = jsxImport
             }
-
             modifyPath(dep, path.node.source)
           },
         },
         ExportDeclaration: {
           enter(path) {
             if (!('source' in path.node)) return
-
             const dep = path.node.source?.value
-            if (!dep || dep.match(/^[./]/)) return
-
             modifyPath(dep, path.node.source!)
           }
         },
