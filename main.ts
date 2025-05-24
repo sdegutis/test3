@@ -1,8 +1,11 @@
 import { transformSync } from '@babel/core'
 import { DevServer, FileTree, generateFiles, Pipeline } from "immaculata"
 import { transformImportsPlugin } from 'immaculata/babel.js'
+import { tryAltExts, useTree } from 'immaculata/hooks.js'
+import { registerHooks } from 'module'
 import { readFileSync, rmSync } from 'node:fs'
 import { join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 
 publishDir({
   projectRoot: import.meta.dirname,
@@ -25,6 +28,8 @@ export function publishDir(opts: {
 }) {
 
   const src = new FileTree(opts.srcDir, opts.projectRoot)
+
+  registerHooks(useTree(src))
 
   const pkgjson = JSON.parse(readFileSync(join(opts.projectRoot, 'package.json'), 'utf8'))
   const prefix = new URL(pkgjson.homepage).pathname.replace(/\/+$/, '')
@@ -78,4 +83,40 @@ export function publishDir(opts: {
     })
   }
 
+}
+
+// registerHooks(compileJsx((src, url) => {
+//   return transform(url, src)?.code!
+// }))
+registerHooks(tryAltExts)
+
+registerHooks({
+  load(url, context, nextLoad) {
+
+    if (url.includes('/node_modules/') && url.match(/\.tsx?$/)) {
+      const src = readFileSync(fileURLToPath(url), 'utf8')
+      const code = transform(url, src)!.code!
+      return {
+        format: 'module',
+        shortCircuit: true,
+        source: code,
+      }
+    }
+
+    console.log('loadnig', url)
+    return nextLoad(url, context)
+  },
+})
+
+await import('./src/index.js')
+
+function transform(path: string, text: string) {
+  return transformSync(text, {
+    sourceMaps: true,
+    filename: path,
+    plugins: [
+      ['@babel/plugin-transform-typescript', { isTSX: true }],
+      ['@babel/plugin-transform-react-jsx', { runtime: 'automatic' }],
+    ],
+  })
 }
