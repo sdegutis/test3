@@ -11,10 +11,7 @@ publishDir({
     port: 8181,
     generateFiles: true,
   },
-  importMap: {
-    'react': 'https://esm.sh/react',
-    'react-dom': 'https://esm.sh/react-dom',
-  }
+  importMap: {}
 })
 
 export function publishDir(opts: {
