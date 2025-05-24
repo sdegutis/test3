@@ -60,7 +60,7 @@ export function publishDir(opts: {
 
     if (!opts.dev || opts.dev.generateFiles) {
       rmSync('docs', { force: true, recursive: true })
-      generateFiles(map, { dry: true, parent: import.meta.dirname })
+      generateFiles(map)
     }
 
     return map
